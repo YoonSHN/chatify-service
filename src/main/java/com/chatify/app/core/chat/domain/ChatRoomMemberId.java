@@ -1,5 +1,6 @@
-package com.chatify.app.core.user.domain;
+package com.chatify.app.core.chat.domain;
 
+import com.chatify.app.core.user.domain.BlockUserId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -14,25 +15,23 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class BlockUserId implements Serializable {
+public class ChatRoomMemberId implements Serializable {
 
-    @Column(name="blocker_id")
-    private Long blockerId;
+    @Column(name="room_id")
+    private Long roomId;
 
-    @Column(name="blocked_id")
-    private Long blockedId;
+    @Column(name="user_id")
+    private Long userId;
 
     @Override
     public boolean equals(Object o){
         if(this==o) return true;
         if(o == null || getClass() != o.getClass()) return false;
-        BlockUserId that = (BlockUserId)o ;
-        return Objects.equals(blockerId, that.blockerId) && Objects.equals(blockedId, that.blockedId);
+        ChatRoomMemberId that = (ChatRoomMemberId)o ;
+        return Objects.equals(roomId, that.roomId) && Objects.equals(userId, that.userId);
     }
     @Override
     public int hashCode(){
-        return Objects.hash(blockerId, blockedId);
+        return Objects.hash(roomId, userId);
     }
-
-
 }
