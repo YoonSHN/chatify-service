@@ -1,6 +1,7 @@
 package com.chatify.app.core.user.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,10 +13,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Table(name="user_profile")
 @Getter
-@SQLDelete(sql = "UPDATE user_settings SET deleted_at = NOW() WHERE user_id = ?")
+@SQLDelete(sql = "UPDATE user_profile SET deleted_at = NOW() WHERE user_id = ?")
 @Where(clause = "deleted_at IS NULL")
 public class UserProfile {
 
@@ -28,7 +29,7 @@ public class UserProfile {
     @JoinColumn(name="user_id")
     private User user;
 
-    @Column(name="real_name", length=50)
+    @Column(name="real_name", length=30)
     private String realName;
 
     @Column(name="birthday")
@@ -37,7 +38,7 @@ public class UserProfile {
     @Column(name="profile_message", length=255)
     private String profileMessage;
 
-    @Column(name="nickname", length=50)
+    @Column(name="nickname", length=30)
     private String nickname;
 
     @CreationTimestamp

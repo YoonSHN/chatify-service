@@ -16,6 +16,5 @@ public class UserController {
 
     private final UserService userService;
 
- //jwt-> simple login, oauth -> social login
 
 }

@@ -16,6 +16,10 @@ spring:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+jwt:
+  secret-key: 'YourSuperSuperSuperLongAndComplexSecretKeyGoesHere' # ❗️ 매우 중요: 이 키는 외부에 절대 노출되면 안 됩니다.
+  access-token-expiration-ms: 1800000 # 30분 (밀리초 단위)
+  refresh-token-expiration-ms: 604800000 # 7일 (밀리초 단위)
 
 
 
