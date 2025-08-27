@@ -20,16 +20,20 @@ public class User {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name="user_id")
     private Long id;
 
-    @Column(name="username", unique=true, length=50)
-    private String username;
+    @OneToOne(mappedBy="user", cascade = CascadeType.ALL, orphanRemoval=true)
+    private UserProfile userProfile;
+
+    @OneToOne(mappedBy="user", cascade = CascadeType.ALL, orphanRemoval=true)
+    private UserSettings userSettings;
+
+    @Column(name="email", nullable = false, unique = true,length = 100)
+    private String email;
 
     @Column(name="password", length=255)
     private String password;
-
-    @Column(name="email", unique = true,length = 100)
-    private String email;
 
     @Column(name="phone_number", unique=true, length=20)
     private String phoneNumber;
@@ -48,11 +52,18 @@ public class User {
     private LocalDateTime deletedAt;
 
     @Builder
-    public User(String username, String password, String email, String phoneNumber) {
-        this.username = username;
+    public User(String email, String password, String phoneNumber) {
         this.password = password;
         this.email = email;
         this.phoneNumber = phoneNumber;
+    }
+
+    public void setUserProfile(UserProfile userProfile){
+        this.userProfile = userProfile;
+    }
+
+    public void setUserSettings(UserSettings userSettings){
+        this.userSettings = userSettings;
     }
 
     @PrePersist

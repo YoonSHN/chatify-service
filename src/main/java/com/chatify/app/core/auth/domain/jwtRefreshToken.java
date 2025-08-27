@@ -1,4 +1,4 @@
-package com.chatify.app.core.auth;
+package com.chatify.app.core.auth.domain;
 
 import com.chatify.app.core.user.domain.User;
 import jakarta.persistence.*;
@@ -51,5 +51,4 @@ public class jwtRefreshToken {
     public static jwtRefreshToken create(User user, String tokenHash, LocalDateTime expiresAt){
         return create(user, tokenHash, expiresAt, null,null);
     }
-
 }

@@ -35,3 +35,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: qwe123!@#
     ports:
       - "8080:8080"
+    volumes:
+      # 내 컴퓨터의 빌드 결과물을 컨테이너의 해당 경로와 동기화
+      - ./build/classes/java/main:/app/classes
+      - ./build/resources/main:/app/resources

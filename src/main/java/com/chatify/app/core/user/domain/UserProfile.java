@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(name="user_profile")
 @Getter
+@SQLDelete(sql = "UPDATE user_settings SET deleted_at = NOW() WHERE user_id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class UserProfile {
 
     @Id
@@ -33,7 +37,7 @@ public class UserProfile {
     @Column(name="profile_message", length=255)
     private String profileMessage;
 
-    @Column(name="nickname", length=50, unique=true)
+    @Column(name="nickname", length=50)
     private String nickname;
 
     @CreationTimestamp
@@ -44,9 +48,24 @@ public class UserProfile {
     @Column(name="updated_at", nullable=false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
+    }
+
+    public static UserProfile create(User user, String realName, LocalDate birthday){
+        UserProfile userProfile = new UserProfile();
+        userProfile.user = user;
+        userProfile.realName = realName;
+        userProfile.birthday = birthday;
+        return userProfile;
+    }
+    //프로필 화면에 표시 될 이름(real_name or nickname)
+    public String getDisplayName(){
+        return (this.nickname != null && !this.nickname.isBlank() ? this.nickname : this.realName);
     }
 
 }

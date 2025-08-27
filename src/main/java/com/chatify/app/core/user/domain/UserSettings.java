@@ -5,7 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @Table(name="user_settings")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@SQLDelete(sql = "UPDATE user_settings SET deleted_at = NOW() WHERE user_id = ?") // --- 변경점: 소프트 삭제 추가 ---
+@Where(clause = "deleted_at IS NULL")
 public class UserSettings {
 
     @Id
@@ -46,4 +50,13 @@ public class UserSettings {
     @UpdateTimestamp
     @Column(name="updated_at",  nullable=false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    public static UserSettings create(User user){
+        UserSettings userSettings = new UserSettings();
+        userSettings.user = user;
+        return userSettings;
+    }
 }

@@ -1,4 +1,4 @@
-package com.chatify.app.core.auth;
+package com.chatify.app.core.auth.domain;
 
 import com.chatify.app.core.user.domain.User;
 import jakarta.persistence.*;
