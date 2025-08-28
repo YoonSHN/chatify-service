@@ -27,14 +27,17 @@ public class AuthController {
     @PostMapping("/send-verification-code")
     public ResponseEntity<ApiResponse<VerificationToken>> sendVerificationCode(@Valid @RequestBody SendCodeRequest request){
         VerificationToken response = authService.sendVerificationCode(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
-
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK, "인증번호가 성공적으로 발송되었습니다.", response));
     }
     //2. 인증 번호 확인 및 임시 인증 토큰(B) 발급 (인증 성공)
     @PostMapping("/verify-code")
     public ResponseEntity<ApiResponse<VerificationToken>> verifyCode(@Valid @RequestBody VerifyCodeRequest request){
         VerificationToken response = authService.verifyCode(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(HttpStatus.OK, "이메일 인증이 성공적으로 완료되었습니다.", response));
+
     }
 
     //3. 회원가입 완료
