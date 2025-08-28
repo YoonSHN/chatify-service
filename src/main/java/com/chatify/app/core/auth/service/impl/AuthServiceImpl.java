@@ -1,16 +1,22 @@
 package com.chatify.app.core.auth.service.impl;
 
+import com.chatify.app.core.auth.dto.request.SendCodeRequest;
 import com.chatify.app.core.auth.dto.request.SignupRequest;
-import com.chatify.app.core.auth.dto.response.VerificationTokenResponse;
+import com.chatify.app.core.auth.dto.request.VerifyCodeRequest;
+import com.chatify.app.core.auth.dto.response.VerificationToken;
 import com.chatify.app.core.auth.service.AuthService;
 import com.chatify.app.core.user.domain.User;
 import com.chatify.app.core.user.domain.UserProfile;
 import com.chatify.app.core.user.domain.UserSettings;
 import com.chatify.app.core.user.repository.UserRepository;
+import com.chatify.app.common.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.Random;
 
 @Service
@@ -19,31 +25,60 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final EmailService emailService;
+    private final StringRedisTemplate redisTemplate;
+
+    private static final String VERIFICATION_CODE_PREFIX = "verify:code";
 
     //이메일로 인증번호 보내고 임시 인증 토큰 받기
     @Override
-    public VerificationTokenResponse sendVerificationCode(SendRequest request){
+    public VerificationToken sendVerificationCode(SendCodeRequest request){
         //6자리 인증번호 발급
         String code = String.format("%06d", new Random().nextInt(999999));
 
+        //redis에 인증번호 저장(검사용)
+        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX + request.getEmail(), code, Duration.ofMinutes(3));
 
+        //이메일 발송
+        emailService.sendMail(request.getEmail(), "Chatify 회원가입 인증번호", "인증번호: " + code);
+
+        //"인증 대기중" 상태의 토큰 생성 및 반환
+        String pendingToken = jwtUtil.createVerificationToken(request.getEmail(), "PENDING_VERIFICATION");
+        return new VerificationToken(pendingToken);
     }
 
     @Override
-    public VerificationTokenResponse verifyCode(verifyCodeRequest request){
+    public VerificationToken verifyCode(VerifyCodeRequest request){
+        //redis에서 이메일로 인증번호 조회
+        String storedCode = redisTemplate.opsForValue().get(VERIFICATION_CODE_PREFIX + request.getEmail());
 
+        //인증번호 비교
+        if(!(storedCode != null && storedCode.equals(request.getCode()))){
+            throw new IllegalArgumentException("인증 번호가 일치하지 않습니다..");
+        }
+
+        //인증 성공 시 Redis에서 번호 삭제
+        redisTemplate.delete(VERIFICATION_CODE_PREFIX + request.getEmaiL());
+
+        //인증 성공 토큰 발급
+        String successToken = jwtUtil.createVerificationToken(request.getEmail(),"SUCCESS");
+        return new VerificationToken(successToken);
     }
-
 
     /*
     자체 회원 가입
      */
+    @Override
+    @Transactional
     public void signup(SignupRequest signupRequest){
-        if(userRepository.existsUserByEmail(signupRequest.getEmail())){
-            throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
-        }
-        //1차 : 이메일에 발송된 이메일이 맞는지, 2차 : 이메일이 앱 내 고유한지
 
+        //인증 성공 토큰 검증 (유효 한지, success 가 있는지)
+        String email = jwtUtil.validateAndGetEmail(request.getVerificationToken());
+
+        if(userRepository.existsUserByEmail(signupRequest.getEmail())){
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
         User user = User.builder().
                 email(signupRequest.getEmail()).
                 password(passwordEncoder.encode(signupRequest.getPassword())).
@@ -60,7 +95,4 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
     }
-
-
-
 }
