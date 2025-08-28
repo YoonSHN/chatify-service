@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Random;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -21,7 +23,10 @@ public class AuthServiceImpl implements AuthService {
     //이메일로 인증번호 보내고 임시 인증 토큰 받기
     @Override
     public VerificationTokenResponse sendVerificationCode(SendRequest request){
-        return
+        //6자리 인증번호 발급
+        String code = String.format("%06d", new Random().nextInt(999999));
+
+
     }
 
     @Override
