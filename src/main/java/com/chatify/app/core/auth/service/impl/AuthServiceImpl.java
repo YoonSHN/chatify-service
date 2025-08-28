@@ -5,6 +5,7 @@ import com.chatify.app.core.auth.dto.request.SignupRequest;
 import com.chatify.app.core.auth.dto.request.VerifyCodeRequest;
 import com.chatify.app.core.auth.dto.response.VerificationToken;
 import com.chatify.app.core.auth.service.AuthService;
+import com.chatify.app.core.auth.service.EmailService;
 import com.chatify.app.core.user.domain.User;
 import com.chatify.app.core.user.domain.UserProfile;
 import com.chatify.app.core.user.domain.UserSettings;
@@ -59,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         //인증 성공 시 Redis에서 번호 삭제
-        redisTemplate.delete(VERIFICATION_CODE_PREFIX + request.getEmaiL());
+        redisTemplate.delete(VERIFICATION_CODE_PREFIX + request.getEmail());
 
         //인증 성공 토큰 발급
         String successToken = jwtUtil.createVerificationToken(request.getEmail(),"SUCCESS");
@@ -74,13 +75,13 @@ public class AuthServiceImpl implements AuthService {
     public void signup(SignupRequest signupRequest){
 
         //인증 성공 토큰 검증 (유효 한지, success 가 있는지)
-        String email = jwtUtil.validateAndGetEmail(request.getVerificationToken());
+        String email = jwtUtil.validateAndGetEmail(signupRequest.getVerificationToken(), "SUCCESS");
 
-        if(userRepository.existsUserByEmail(signupRequest.getEmail())){
+        if(userRepository.existsUserByEmail(email)){
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
         User user = User.builder().
-                email(signupRequest.getEmail()).
+                email(email).
                 password(passwordEncoder.encode(signupRequest.getPassword())).
                 phoneNumber(signupRequest.getPhoneNumber()).build();
 
